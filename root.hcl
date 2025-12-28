@@ -171,12 +171,16 @@ generate "lxc_bootstrap_script_tpl" {
     #!/bin/bash
     set -e
     apt-get update -y
-    apt-get install -y curl ansible
+    apt-get install -y curl ansible avahi-daemon
 
     # Install Tailscale
     curl -fsSL https://tailscale.com/install.sh | sh
     systemctl enable tailscaled
     systemctl start tailscaled
+
+    # Enable and start mDNS (Avahi)
+   systemctl enable avahi-daemon 
+    systemctl start avahi-daemon
 
     # Authenticate Tailscale with token and enable SSH
     tailscale up --authkey="$${tailscale_auth_token}" --ssh --accept-risk=lose-ssh --accept-routes=false --hostname="$${hostname}"
