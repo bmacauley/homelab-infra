@@ -1,0 +1,6 @@
+[tools]
+opentofu = "1.11.1"
+prek = "latest"
+python = "3.13"
+terragrunt = "0.96.1"
+uv = "latest"
