@@ -179,7 +179,7 @@ generate "lxc_bootstrap_script_tpl" {
     systemctl start tailscaled
 
     # Enable and start mDNS (Avahi)
-   systemctl enable avahi-daemon 
+    systemctl enable avahi-daemon
     systemctl start avahi-daemon
 
     # Authenticate Tailscale with token and enable SSH
