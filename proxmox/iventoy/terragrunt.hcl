@@ -48,9 +48,14 @@ inputs = {
   # User credentials
   user_password = "password"
 
+  # Container privilege mode (false = privileged, true = unprivileged)
+  unprivileged = false
+
     # Start container after creation
   start_on_create = true
 
   # Optional: start container on Proxmox host boot
   start_on_boot = false
 }
+
+
