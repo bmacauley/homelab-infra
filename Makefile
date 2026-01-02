@@ -36,7 +36,9 @@ iventoy: ## proxmox-iventoy
 	$(eval ENV := proxmox)
 	$(eval LAYER := iventoy)
 
-
+ipxe-dhcpproxy: ## proxmox-ipxe-dhcpproxy
+	$(eval ENV := proxmox)
+	$(eval LAYER := ipxe-dhcpproxy)
 
 
 #--------------------------------------------

@@ -106,153 +106,17 @@ generate "proxmox_provider" {
   EOF
 }
 
-generate "proxmox_module_versions_override" {
-  path      = "versions_override.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-    terraform {
-      required_providers {
-        proxmox = {
-          source  = "Telmate/proxmox"
-          version = "3.0.2-rc07"
-        }
-      }
-    }
-  EOF
-}
-
-generate "lxc_advanced_config" {
-  path      = "lxc_advanced_config.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-    variable "proxmox_host" {
-      type    = string
-      default = "proxmox.tailfb76f.ts.net"
-    }
-
-    locals {
-      lxc_id = proxmox_lxc.lxc.vmid
-    }
-
-    resource "null_resource" "configure_lxc_tailscale" {
-      depends_on = [proxmox_lxc.lxc]
-
-      connection {
-        type        = "ssh"
-        host        = var.proxmox_host
-        user        = "root"
-        # private_key = file("~/.ssh/id_rsa") # access via tailscale
-      }
-
-      provisioner "remote-exec" {
-        inline = [
-          # Configure LXC features and TUN device (container must be stopped)
-          "pct stop $${local.lxc_id} || true",
-          "pct set $${local.lxc_id} --dev0 /dev/net/tun",
-          "pct set $${local.lxc_id} --features keyctl=1,nesting=1",
-          "pct start $${local.lxc_id}",
-
-        ]
-      }
-
-      triggers = {
-        container_id = proxmox_lxc.lxc.vmid
-      }
-    }
-  EOF
-}
-
-
-
-generate "lxc_bootstrap_script_tpl" {
-  path      = "lxc_bootstrap_script.sh.tpl"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-    #!/bin/bash
-    set -e
-    apt-get update -y
-    apt-get install -y curl ansible avahi-daemon
-
-    # Install Tailscale
-    curl -fsSL https://tailscale.com/install.sh | sh
-    systemctl enable tailscaled
-    systemctl start tailscaled
-
-    # Enable and start mDNS (Avahi)
-    systemctl enable avahi-daemon
-    systemctl start avahi-daemon
-
-    # Authenticate Tailscale with token and enable SSH
-    tailscale up --authkey="$${tailscale_auth_token}" --ssh --accept-risk=lose-ssh --accept-routes=false --hostname="$${hostname}"
-  EOF
-}
-
-
-
-
-
-
-
-generate "lxc_base_provisioner" {
-  path      = "lxc_base_provisioner.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-
-    locals {
-      bootstrap_script = templatefile("$${path.module}/lxc_bootstrap_script.sh.tpl", {
-        tailscale_auth_token = data.vault_kv_secret_v2.tailscale.data["auth-key"]
-        hostname = var.lxc_name
-      })
-    }
-
-    resource "local_file" "bootstrap_script" {
-      content  = local.bootstrap_script
-      filename = "$${path.module}/bootstrap_script.sh"
-    }
-
-    resource "null_resource" "base_provisioner" {
-          depends_on = [null_resource.configure_lxc_tailscale, local_file.bootstrap_script]
-
-          triggers = {
-            lxc_id       = proxmox_lxc.lxc.vmid
-            proxmox_host = var.proxmox_host
-          }
-
-          connection {
-            type        = "ssh"
-            host        = self.triggers.proxmox_host
-            user        = "root"
-          }
-
-          # Copy script to Proxmox host first
-          provisioner "file" {
-            source      = local_file.bootstrap_script.filename
-            destination = "/tmp/bootstrap_script_$${local.lxc_id}.sh"
-          }
-
-          # Push script into LXC container and execute it
-          provisioner "remote-exec" {
-            inline = [
-              "pct push $${local.lxc_id} /tmp/bootstrap_script_$${local.lxc_id}.sh /tmp/bootstrap_script.sh",
-              "pct exec $${local.lxc_id} -- chmod +x /tmp/bootstrap_script.sh",
-              "pct exec $${local.lxc_id} -- /tmp/bootstrap_script.sh",
-            ]
-          }
-
-          # Logout of Tailscale on destroy
-          provisioner "remote-exec" {
-            when = destroy
-
-            connection {
-              type        = "ssh"
-              host        = self.triggers.proxmox_host
-              user        = "root"
-            }
-
-            inline = [
-              "pct exec $${self.triggers.lxc_id} -- tailscale logout || true",
-            ]
-          }
-        }
-  EOF
-}
+# generate "proxmox_module_versions_override" {
+#   path      = "versions_override.tf"
+#   if_exists = "overwrite_terragrunt"
+#   contents  = <<-EOF
+#     terraform {
+#       required_providers {
+#         proxmox = {
+#           source  = "Telmate/proxmox"
+#           version = "3.0.2-rc07"
+#         }
+#       }
+#     }
+#   EOF
+# }
