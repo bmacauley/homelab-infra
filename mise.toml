@@ -1,7 +1,9 @@
 [tools]
+claude = "2.0.76"
 gh = "latest"
-opentofu = "1.11.1"
-prek = "latest"
 python = "3.13"
-terragrunt = "0.96.1"
 uv = "latest"
+prek = "latest"
+opentofu = "1.11.1"
+terragrunt = "0.96.1"
+
