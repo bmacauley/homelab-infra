@@ -46,9 +46,9 @@ inputs = {
   clone      = "ubuntu-2404-homelab"
   full_clone = true
 
-  # OS type (l26 = Linux 2.6+ kernel)
+  # OS type
   qemu_os = "l26"
-  os_type = "l26"
+  os_type = "cloud-init"
 
   # CPU configuration
   cores    = 2
@@ -57,7 +57,7 @@ inputs = {
   numa     = false
 
   # Memory configuration
-  memory  = 512
+  memory  = 1024
   balloon = 0
 
   # BIOS
@@ -103,6 +103,11 @@ inputs = {
     ciuser    = "ubuntu"
   }
 
+  serial = {
+    id   = 0
+    type = "socket"
+  }
+
   # Display
   vga = {
     type = "std"
@@ -118,6 +123,9 @@ inputs = {
   # Tailscale configuration
   enable_tailscale = true
 
-  # Bootstrap configuration
-  enable_bootstrap = true
+  # Provisioning via cloud-init (recommended)
+  use_cloudinit_provisioning = true
+
+  # Legacy bootstrap (disabled when using cloud-init)
+  enable_bootstrap = false
 }

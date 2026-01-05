@@ -5,9 +5,9 @@
 #-------------------------------------------------------------
 
 resource "proxmox_vm_qemu" "vm" {
+  name        = var.vm_name
   target_node = var.node
   vmid        = var.vm_id
-  name        = var.vm_name
   desc        = var.description
   tags        = var.tags
 
@@ -18,16 +18,6 @@ resource "proxmox_vm_qemu" "vm" {
   # OS type
   qemu_os = var.qemu_os
   os_type = var.os_type
-
-  # BIOS and boot
-  bios     = var.bios
-  machine  = var.machine
-  boot     = var.boot
-  onboot   = var.onboot
-  vm_state = var.vm_state
-
-  # Agent
-  agent = var.agent
 
   # CPU configuration
   cpu {
@@ -42,22 +32,32 @@ resource "proxmox_vm_qemu" "vm" {
   balloon = var.balloon
   hotplug = var.hotplug
 
+  # BIOS and boot
+  bios               = var.bios
+  machine            = var.machine
+  boot               = var.boot
+  start_at_node_boot = var.onboot
+  vm_state           = var.vm_state
+
+  # QEMU Guest Agent
+  agent = var.agent
+
   # SCSI controller
   scsihw = var.scsihw
 
-  # VGA
-  vga {
-    type   = var.vga.type
-    memory = var.vga.memory
-  }
-
-  # Serial device
+  # Serial console
   dynamic "serial" {
     for_each = var.serial != null ? [var.serial] : []
     content {
       id   = serial.value.id
       type = serial.value.type
     }
+  }
+
+  # VGA
+  vga {
+    type   = var.vga.type
+    memory = var.vga.memory
   }
 
   # Disks configuration
@@ -242,14 +242,16 @@ resource "proxmox_vm_qemu" "vm" {
   }
 
   # Cloud-init settings
-  ciuser       = var.cloudinit.enabled ? var.cloudinit.ciuser : null
-  cipassword   = var.cloudinit.enabled ? var.cloudinit.cipassword : null
-  cicustom     = var.cloudinit.enabled ? var.cloudinit.cicustom : null
   ipconfig0    = var.cloudinit.enabled ? var.cloudinit.ipconfig0 : null
   ipconfig1    = var.cloudinit.enabled ? var.cloudinit.ipconfig1 : null
+  ciuser       = var.cloudinit.enabled ? var.cloudinit.ciuser : null
+  cipassword   = var.cloudinit.enabled ? var.cloudinit.cipassword : null
   searchdomain = var.cloudinit.enabled ? var.cloudinit.searchdomain : null
   nameserver   = var.cloudinit.enabled ? var.cloudinit.nameserver : null
   sshkeys      = var.cloudinit.enabled ? var.cloudinit.sshkeys : null
+
+  # Cloud-init custom user-data (provisioning via cloud-init)
+  cicustom = var.cloudinit.enabled && var.use_cloudinit_provisioning ? "user=${var.snippets_storage}:snippets/vm-${var.vm_id}-user.yml" : var.cloudinit.cicustom
 
   # Lifecycle
   lifecycle {
@@ -257,4 +259,7 @@ resource "proxmox_vm_qemu" "vm" {
       network[0].macaddr,
     ]
   }
+
+  # Ensure cloud-init snippet is uploaded before VM creation
+  depends_on = [null_resource.cloudinit_snippet]
 }

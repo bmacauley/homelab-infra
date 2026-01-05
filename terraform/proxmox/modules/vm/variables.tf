@@ -62,12 +62,12 @@ variable "iso" {
 # OS Type Variables
 #-------------------------------------------------------------
 variable "os_type" {
-  description = "OS type for QEMU optimization."
+  description = "Provisioning method based on OS type. Use 'cloud-init' for cloud-init templates."
   type        = string
-  default     = "l26"
+  default     = "cloud-init"
   validation {
-    condition     = contains(["l26", "l24", "win11", "win10", "win8", "win7", "wvista", "wxp", "w2k8", "w2k3", "w2k", "solaris", "other"], var.os_type)
-    error_message = "Invalid OS type. Use l26 for Linux 2.6+, or other valid Proxmox OS types."
+    condition     = contains(["ubuntu", "centos", "cloud-init", "l26", "l24", "win11", "win10", "win8", "win7", "wvista", "wxp", "w2k8", "w2k3", "w2k", "solaris", "other"], var.os_type)
+    error_message = "Invalid OS type. Use 'cloud-init' for cloud-init templates, or OS-specific types."
   }
 }
 
@@ -424,6 +424,27 @@ variable "additional_packages" {
   description = "Additional packages to install during bootstrap."
   type        = list(string)
   default     = []
+}
+
+variable "additional_runcmd" {
+  description = "Additional runcmd entries for cloud-init."
+  type        = list(string)
+  default     = []
+}
+
+#-------------------------------------------------------------
+# Cloud-init Provisioning Variables
+#-------------------------------------------------------------
+variable "use_cloudinit_provisioning" {
+  description = "Use cloud-init for provisioning instead of qemu-guest-agent."
+  type        = bool
+  default     = true
+}
+
+variable "snippets_storage" {
+  description = "Proxmox storage for cloud-init snippets."
+  type        = string
+  default     = "local"
 }
 
 #-------------------------------------------------------------
