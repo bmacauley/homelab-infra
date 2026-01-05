@@ -40,6 +40,10 @@ ipxe-dhcpproxy: ## proxmox-ipxe-dhcpproxy
 	$(eval ENV := proxmox)
 	$(eval LAYER := ipxe-dhcpproxy)
 
+ubuntu-2404: ## proxmox-ubuntu-2404
+	$(eval ENV := proxmox)
+	$(eval LAYER := ubuntu-2404)
+
 
 #--------------------------------------------
 # terragrunt

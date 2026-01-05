@@ -87,29 +87,31 @@ resource "null_resource" "ssh_provisioner" {
   depends_on = [proxmox_vm_qemu.vm, local_file.bootstrap_script]
 
   triggers = {
-    vm_id        = proxmox_vm_qemu.vm.vmid
-    vm_ip        = proxmox_vm_qemu.vm.default_ipv4_address
-    proxmox_host = var.proxmox_host
+    vm_id            = proxmox_vm_qemu.vm.vmid
+    vm_ip            = proxmox_vm_qemu.vm.default_ipv4_address
+    proxmox_host     = var.proxmox_host
+    ssh_private_key  = var.ssh_private_key_path
+    ssh_user         = var.ssh_user
   }
 
   # First, copy script to Proxmox host
   connection {
     type = "ssh"
-    host = var.proxmox_host
+    host = self.triggers.proxmox_host
     user = "root"
   }
 
   provisioner "file" {
     source      = local_file.bootstrap_script[0].filename
-    destination = "/tmp/bootstrap_script_${local.vm_id}.sh"
+    destination = "/tmp/bootstrap_script_${self.triggers.vm_id}.sh"
   }
 
   # SSH from Proxmox host to VM and run the script
   provisioner "remote-exec" {
     inline = [
       "sleep 60", # Wait for VM to fully boot
-      "scp -o StrictHostKeyChecking=no -i ${var.ssh_private_key_path} /tmp/bootstrap_script_${local.vm_id}.sh ${var.ssh_user}@${proxmox_vm_qemu.vm.default_ipv4_address}:/tmp/bootstrap_script.sh",
-      "ssh -o StrictHostKeyChecking=no -i ${var.ssh_private_key_path} ${var.ssh_user}@${proxmox_vm_qemu.vm.default_ipv4_address} 'chmod +x /tmp/bootstrap_script.sh && /tmp/bootstrap_script.sh'",
+      "scp -o StrictHostKeyChecking=no -i ${self.triggers.ssh_private_key} /tmp/bootstrap_script_${self.triggers.vm_id}.sh ${self.triggers.ssh_user}@${self.triggers.vm_ip}:/tmp/bootstrap_script.sh",
+      "ssh -o StrictHostKeyChecking=no -i ${self.triggers.ssh_private_key} ${self.triggers.ssh_user}@${self.triggers.vm_ip} 'chmod +x /tmp/bootstrap_script.sh && /tmp/bootstrap_script.sh'",
     ]
   }
 
@@ -124,7 +126,7 @@ resource "null_resource" "ssh_provisioner" {
     }
 
     inline = [
-      "ssh -o StrictHostKeyChecking=no -i ${var.ssh_private_key_path} ${var.ssh_user}@${self.triggers.vm_ip} 'tailscale logout' || true",
+      "ssh -o StrictHostKeyChecking=no -i ${self.triggers.ssh_private_key} ${self.triggers.ssh_user}@${self.triggers.vm_ip} 'tailscale logout' || true",
     ]
   }
 }
