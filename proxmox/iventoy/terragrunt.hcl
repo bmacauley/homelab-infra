@@ -75,4 +75,11 @@ inputs = {
 
   # Bootstrap configuration
   enable_bootstrap = true
+
+  # Ansible pull configuration
+  enable_ansible_pull   = true
+  ansible_pull_repo     = "https://github.com/bmacauley/ansible-homelab.git"
+  ansible_pull_playbook = "playbooks/pull/iventoy.yml"
+  ansible_pull_branch   = "main"
+
 }
