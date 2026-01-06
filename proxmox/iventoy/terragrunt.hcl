@@ -36,7 +36,7 @@ inputs = {
   node = "proxmox"
 
   # LXC identity
-  lxc_id   = 151
+  lxc_id   = 100
   lxc_name = "iventoy"
 
   # OS template
