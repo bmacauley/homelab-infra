@@ -10,10 +10,17 @@ locals {
   lxc_id = proxmox_lxc.lxc.vmid
 
   bootstrap_script = var.enable_bootstrap ? templatefile("${path.module}/templates/bootstrap.sh.tpl", {
-    tailscale_auth_token = try(local.tailscale_auth_key, null)
-    hostname             = var.lxc_name
-    additional_packages  = join(" ", var.additional_packages)
-    enable_tailscale     = var.enable_tailscale
+    tailscale_auth_token       = try(local.tailscale_auth_key, null)
+    hostname                   = var.lxc_name
+    additional_packages        = join(" ", var.additional_packages)
+    enable_tailscale           = var.enable_tailscale
+    enable_ansible_pull        = var.enable_ansible_pull
+    ansible_pull_repo          = var.ansible_pull_repo
+    ansible_pull_playbook      = var.ansible_pull_playbook
+    ansible_pull_branch        = var.ansible_pull_branch
+    ansible_pull_extra_vars    = var.ansible_pull_extra_vars
+    ansible_pull_checkout_dir  = var.ansible_pull_checkout_dir
+    ansible_pull_vault_password = var.ansible_pull_vault_password
   }) : null
 }
 

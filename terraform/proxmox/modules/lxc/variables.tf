@@ -231,3 +231,49 @@ variable "additional_packages" {
   type        = list(string)
   default     = []
 }
+
+#-------------------------------------------------------------
+# Ansible Pull Variables
+#-------------------------------------------------------------
+variable "enable_ansible_pull" {
+  description = "Enable ansible-pull to configure the container from a Git repository."
+  type        = bool
+  default     = false
+}
+
+variable "ansible_pull_repo" {
+  description = "Git repository URL for ansible-pull."
+  type        = string
+  default     = null
+}
+
+variable "ansible_pull_playbook" {
+  description = "Path to playbook within the repository."
+  type        = string
+  default     = "playbook.yml"
+}
+
+variable "ansible_pull_branch" {
+  description = "Git branch to checkout."
+  type        = string
+  default     = "main"
+}
+
+variable "ansible_pull_extra_vars" {
+  description = "Extra variables to pass to ansible-pull as key=value pairs."
+  type        = map(string)
+  default     = {}
+}
+
+variable "ansible_pull_checkout_dir" {
+  description = "Directory to checkout the repository."
+  type        = string
+  default     = "/opt/ansible"
+}
+
+variable "ansible_pull_vault_password" {
+  description = "Ansible vault password (optional)."
+  type        = string
+  sensitive   = true
+  default     = null
+}
